@@ -1,43 +1,33 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
+import { Profile } from "../models/profile";
 import "./App.scss";
+import User from "./User";
 
-interface IProps{}
-interface State{
-  fullName: string;
-  title:string;
-  country:string;
-  imageUrl:string
-}
+interface State extends Profile {}
 
-export class App extends React.Component<{},State> {
-  state = {} as State
-  public componentDidMount() {
-    if (chrome && chrome.tabs) {
-      chrome.tabs.query({ currentWindow: true, active: true }, tabs => {
-        const tab = tabs[0];
-        chrome.tabs.sendMessage(tab.id || 0, { from: "popup", subject: "getFullName" }, response => {
-          this.setState({
-            fullName: response.fullName,
-            title:response.title,
-            country:response.country,
-            imageUrl: response.imageUrl
-          })
-        });
-      });
+const App: React.FunctionComponent<{}> = () => {
+  const [fullName, setFullName] = useState("Stephane");
+  const [title, setTitle] = useState("Architecte");
+  const [country, setCountry] = useState("New York");
+  const [imageUrl, setImage] = useState("https://www.pngitem.com/pimgs/m/146-1468479_my-profile-icon-blank-profile-picture-circle-hd.png");
+  useEffect(() => {
+    if(chrome &&chrome.tabs){
+      chrome.tabs.query({ currentWindow: true, active: true}, tabs => {
+        const tab = tabs[0]
+        chrome.tabs.sendMessage(tab.id || 0, {from: "popup", subject: "getFullName"}, response => {
+          setFullName(response.fullName);
+          setTitle(response.title)
+          setCountry(response.country)
+          setImage(response.imageUrl)
+        })
+      })
     }
-  }
-
-  render() {
-    return <div className="app">
-      <ul>
-        <li>{this.state.fullName}</li>
-        <li>{this.state.title}</li>
-        <li>{this.state.country}</li>
-      </ul>
-
-      <img src={this.state.imageUrl} alt="test"/>
-    </div>;
-  }
+  })
+  return (
+    <div className="app">
+      <User fullName={fullName} title={title} country={country} imageUrl={imageUrl}/>
+    </div>
+  );
 }
 
 export default App;
